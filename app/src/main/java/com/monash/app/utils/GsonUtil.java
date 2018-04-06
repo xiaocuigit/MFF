@@ -27,4 +27,5 @@ public class GsonUtil {
         {}.getType());
         return users;
     }
+
 }

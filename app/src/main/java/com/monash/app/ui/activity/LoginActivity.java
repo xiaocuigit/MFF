@@ -6,12 +6,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.monash.app.R;
 import com.monash.app.bean.User;
+import com.monash.app.bean.weather.CurrentWeather;
+import com.monash.app.bean.weather.PredictWeather;
+import com.monash.app.bean.weather.WeatherDaily;
 import com.monash.app.utils.GsonUtil;
 import com.monash.app.utils.HttpUtil;
+import com.monash.app.utils.WeatherUtil;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
@@ -33,12 +35,13 @@ public class LoginActivity extends BaseActivity {
 
     private String userEmail;
     private String userPassword;
+    private int num = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ButterKnife.bind(this);
-        com.orhanobut.logger.Logger.addLogAdapter(new AndroidLogAdapter());
+        Logger.addLogAdapter(new AndroidLogAdapter());
     }
 
     @OnClick(R.id.btn_login)
@@ -92,6 +95,38 @@ public class LoginActivity extends BaseActivity {
         }
         return flag;
     }
+
+
+//    private void weatherData() {
+//        String lat = "31.27";
+//        String lon = "120.73";
+//        WeatherUtil weatherUtil = WeatherUtil.getInstance();
+//
+//        CurrentWeather currentWeather = weatherUtil.getCurrentWeatherInfo(lat, lon);
+//        if(currentWeather != null) {
+//            String cityName = currentWeather.getWeatherLocation().getCity_name();
+//            String temperature = currentWeather.getWeatherNow().getTemperature();
+//            String weather = currentWeather.getWeatherNow().getWeather_now();
+//            String humidity = currentWeather.getWeatherNow().getHumidity();
+//            if (cityName != null && temperature != null) {
+//                Logger.d("now");
+//                Logger.d(cityName + ":" + weather + ", " + temperature + ", " + humidity);
+//            }
+//        }
+////        PredictWeather predictWeather = weatherUtil.getPredictWeatherInfo(lat, lon, 3);
+////        if(predictWeather != null) {
+////            List<WeatherDaily> weatherDailies = predictWeather.getWeatherDailyList();
+////            if(weatherDailies != null){
+////                int days = weatherDailies.size();
+////                if(days > 2){
+////                    Logger.d("predict");
+////                    Logger.d(weatherDailies.get(1).getText_day());
+////                    Logger.d(weatherDailies.get(1).getDate());
+////                }
+////            }
+////        }
+//
+//    }
 
     private boolean validateInput() {
         userEmail = user_email.getText().toString();
