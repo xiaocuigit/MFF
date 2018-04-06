@@ -17,6 +17,10 @@ import com.monash.app.utils.WeatherUtil;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
 
 import butterknife.BindView;
@@ -35,7 +39,6 @@ public class LoginActivity extends BaseActivity {
 
     private String userEmail;
     private String userPassword;
-    private int num = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,25 +47,43 @@ public class LoginActivity extends BaseActivity {
         Logger.addLogAdapter(new AndroidLogAdapter());
     }
 
+    @Override
+    protected int getLayoutView() {
+        return R.layout.activity_login;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
     @OnClick(R.id.btn_login)
     void login(){
-        if(validateInput()){
-            if(isAuthorizedUser()){
-                Intent intent = new Intent(this, HomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        }
+        String lat = "31.27";
+        String lon = "120.73";
+        WeatherUtil.getInstance().handleCurrentWeatherInfo(lat, lon);
+//        WeatherUtil.getInstance().handlePredictWeatherInfo(lat, lon, 3);
+
+//        if(validateInput()){
+//            if(isAuthorizedUser()){
+//                Intent intent = new Intent(this, HomeActivity.class);
+//                startActivity(intent);
+//                finish();
+//            }
+//        }
     }
 
     @OnClick(R.id.tv_signup_account)
     void createAccount(){
         Intent intent = new Intent(this, SignUpActivity.class);
         startActivity(intent);
-    }
-    @Override
-    protected int getLayoutView() {
-        return R.layout.activity_login;
     }
 
     /**
@@ -73,11 +94,8 @@ public class LoginActivity extends BaseActivity {
     private boolean isAuthorizedUser(){
         boolean flag = false;
         String str = "http://192.168.1.108:8080/friendfinder/webresources/app.profile/findByEmail/";
-        StringBuilder url = new StringBuilder("");
-        url.append(str);
-        url.append(userEmail);
 
-        String userInfo = HttpUtil.getInstance().get(url.toString());
+        String userInfo = HttpUtil.getInstance().get(str + userEmail);
         if(!userInfo.equals("")) {
             Logger.d(userInfo);
             User user = GsonUtil.getInstance().getUsers(userInfo).get(0);
@@ -96,37 +114,33 @@ public class LoginActivity extends BaseActivity {
         return flag;
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getCurrentWeather(CurrentWeather currentWeather){
+        if(currentWeather != null) {
+            String cityName = currentWeather.getWeatherLocation().getCity_name();
+            String temperature = currentWeather.getWeatherNow().getTemperature();
+            String weather = currentWeather.getWeatherNow().getWeather_now();
+            String humidity = currentWeather.getWeatherNow().getHumidity();
+            if (cityName != null && temperature != null) {
+                Logger.d("now");
+                Logger.d(cityName + ":" + weather + ", " + temperature + ", " + humidity);
+            }
+        }
+    }
 
-//    private void weatherData() {
-//        String lat = "31.27";
-//        String lon = "120.73";
-//        WeatherUtil weatherUtil = WeatherUtil.getInstance();
-//
-//        CurrentWeather currentWeather = weatherUtil.getCurrentWeatherInfo(lat, lon);
-//        if(currentWeather != null) {
-//            String cityName = currentWeather.getWeatherLocation().getCity_name();
-//            String temperature = currentWeather.getWeatherNow().getTemperature();
-//            String weather = currentWeather.getWeatherNow().getWeather_now();
-//            String humidity = currentWeather.getWeatherNow().getHumidity();
-//            if (cityName != null && temperature != null) {
-//                Logger.d("now");
-//                Logger.d(cityName + ":" + weather + ", " + temperature + ", " + humidity);
-//            }
-//        }
-////        PredictWeather predictWeather = weatherUtil.getPredictWeatherInfo(lat, lon, 3);
-////        if(predictWeather != null) {
-////            List<WeatherDaily> weatherDailies = predictWeather.getWeatherDailyList();
-////            if(weatherDailies != null){
-////                int days = weatherDailies.size();
-////                if(days > 2){
-////                    Logger.d("predict");
-////                    Logger.d(weatherDailies.get(1).getText_day());
-////                    Logger.d(weatherDailies.get(1).getDate());
-////                }
-////            }
-////        }
-//
-//    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getPredictWeather(PredictWeather predictWeather){
+        if(predictWeather != null) {
+            List<WeatherDaily> weatherDailies = predictWeather.getWeatherDailyList();
+            if(weatherDailies != null){
+                int days = weatherDailies.size();
+                if(days > 2){
+                    Logger.d("predict");
+                    Logger.d(weatherDailies.get(1).getText_day() + " : " + weatherDailies.get(1).getDate());
+                }
+            }
+        }
+    }
 
     private boolean validateInput() {
         userEmail = user_email.getText().toString();

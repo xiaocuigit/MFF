@@ -1,15 +1,13 @@
 package com.monash.app.utils;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.monash.app.bean.weather.CurrentWeather;
 import com.monash.app.bean.weather.PredictWeather;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.List;
 
 /**
  * Created by abner on 2018/4/6.
@@ -76,38 +74,34 @@ public class WeatherUtil {
     }
 
     /**
-     * 获取当前天气实况
+     * 获取当前天气实况，并发送给消息订阅者
      * @param lat
      * @param lon
      * @return
      */
-    public CurrentWeather getCurrentWeatherInfo(String lat, String lon){
+    public void handleCurrentWeatherInfo(String lat, String lon){
         String result = handUrlResponse(getCurrentUrl(lat, lon));
         if(result != null){
             CurrentWeather currentWeather = gson.fromJson(result, CurrentWeather.class);
             if(currentWeather != null){
-                return currentWeather;
+                EventBus.getDefault().post(currentWeather);
             }
         }
-        return null;
     }
 
     /**
-     * 获取逐日天气预报
+     * 获取逐日天气预报，并发送给消息订阅者
      * @param lat
      * @param lon
      * @param days
-     * @return
      */
-    public PredictWeather getPredictWeatherInfo(String lat, String lon, int days){
+    public void handlePredictWeatherInfo(String lat, String lon, int days){
         String result = handUrlResponse(getPredictUrl(lat, lon, days));
         if(result != null){
             PredictWeather predictWeather = gson.fromJson(result, PredictWeather.class);
             if(predictWeather != null){
-                return predictWeather;
+                EventBus.getDefault().post(predictWeather);
             }
         }
-        return null;
     }
-
 }
