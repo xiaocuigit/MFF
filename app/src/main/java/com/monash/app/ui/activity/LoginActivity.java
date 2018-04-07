@@ -3,9 +3,11 @@ package com.monash.app.ui.activity;
 import android.content.Intent;
 import android.support.design.widget.TextInputEditText;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.widget.TextView;
 
+import com.monash.app.App;
 import com.monash.app.R;
 import com.monash.app.bean.User;
 import com.monash.app.bean.weather.CurrentWeather;
@@ -27,7 +29,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginActivity extends BaseActivity {
+public class LoginActivity extends AppCompatActivity {
 
     @BindView(R.id.input_email) TextInputEditText user_email;
 
@@ -43,13 +45,10 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+
         ButterKnife.bind(this);
         Logger.addLogAdapter(new AndroidLogAdapter());
-    }
-
-    @Override
-    protected int getLayoutView() {
-        return R.layout.activity_login;
     }
 
     @Override
@@ -66,18 +65,18 @@ public class LoginActivity extends BaseActivity {
 
     @OnClick(R.id.btn_login)
     void login(){
-        String lat = "31.27";
-        String lon = "120.73";
-        WeatherUtil.getInstance().handleCurrentWeatherInfo(lat, lon);
+//        String lat = "31.27";
+//        String lon = "120.73";
+//        WeatherUtil.getInstance().handleCurrentWeatherInfo(lat, lon);
 //        WeatherUtil.getInstance().handlePredictWeatherInfo(lat, lon, 3);
 
-//        if(validateInput()){
-//            if(isAuthorizedUser()){
-//                Intent intent = new Intent(this, HomeActivity.class);
-//                startActivity(intent);
-//                finish();
-//            }
-//        }
+        if(validateInput()){
+            if(isAuthorizedUser()){
+                Intent intent = new Intent(this, HomeActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        }
     }
 
     @OnClick(R.id.tv_signup_account)
@@ -101,6 +100,8 @@ public class LoginActivity extends BaseActivity {
             User user = GsonUtil.getInstance().getUsers(userInfo).get(0);
             if(user.getPassword().equals(userPassword)){
                 Logger.d(user.getPassword() + "\n" + user.getEmail());
+                Logger.d(user.getFirstName() + " " + user.getSurName());
+                App.setUser(user);
                 flag = true;
             }else {
                 user_password.setError("Password Incorrect");

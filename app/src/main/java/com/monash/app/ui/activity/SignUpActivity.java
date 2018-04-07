@@ -2,12 +2,13 @@ package com.monash.app.ui.activity;
 
 import android.support.design.widget.TextInputEditText;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import com.monash.app.R;
 
 import butterknife.BindView;
 
-public class SignUpActivity extends BaseActivity {
+public class SignUpActivity extends AppCompatActivity {
 
 
     @BindView(R.id.input_first_name) TextInputEditText user_first_name;
@@ -25,10 +26,8 @@ public class SignUpActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_sign_up);
+
     }
 
-    @Override
-    protected int getLayoutView() {
-        return R.layout.activity_sign_up;
-    }
 }

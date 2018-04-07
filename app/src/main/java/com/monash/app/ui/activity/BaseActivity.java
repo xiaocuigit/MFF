@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatActivity;
 
+import com.monash.app.App;
 import com.monash.app.bean.User;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
@@ -14,25 +15,17 @@ import com.orhanobut.logger.Logger;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
-    private static User user = null;
+    public User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getLayoutView());
+        user = App.getUser();
     }
 
     protected abstract
     @LayoutRes
     int getLayoutView();
 
-    public static void initUser(User initUser){
-        if(user == null){
-            user = initUser;
-        }
-    }
-
-    public static User getUser(){
-        return user;
-    }
 }
