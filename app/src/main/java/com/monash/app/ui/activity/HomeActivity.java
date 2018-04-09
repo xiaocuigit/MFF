@@ -13,17 +13,30 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.TextClock;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
 import com.monash.app.R;
+import com.monash.app.bean.weather.CurrentWeather;
+import com.monash.app.bean.weather.PredictWeather;
+import com.monash.app.bean.weather.WeatherDaily;
+import com.monash.app.utils.ConfigUtil;
+import com.monash.app.utils.EventUtil;
 import com.monash.app.utils.HttpUtil;
+import com.monash.app.utils.WeatherUtil;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,41 +50,45 @@ public class HomeActivity extends BaseActivity
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.nav_view) NavigationView navigationView;
     @BindView(R.id.drawer_layout) DrawerLayout drawer;
+    @BindView(R.id.tc_current_time) TextClock tcCurrentTime;
+    @BindView(R.id.tv_current_weather) TextView tvCurrentWeather;
+    @BindView(R.id.tv_predict_weather) TextView tvPredictWeather;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        initDrawer();
+        initHeader();
+
+        initWeatherInfo();
+
         ButterKnife.bind(this);
         Logger.addLogAdapter(new AndroidLogAdapter());
 
-        initDrawer();
-        initHeader();
+        tcCurrentTime.setFormat12Hour("yyyy-MM-dd hh:mm, EEEE");
     }
 
-    private void initDrawer() {
-        setSupportActionBar(toolbar);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-        navigationView.setNavigationItemSelectedListener(this);
+    private void initWeatherInfo() {
+        String lat = "31.27";
+        String lon = "120.73";
+        // 向服务器请求天气信息
+        HttpUtil.getInstance().get(WeatherUtil.getCurrentUrl(lat, lon),
+                ConfigUtil.EVENT_LOAD_CURRENT_WEATHER);
+        HttpUtil.getInstance().get(WeatherUtil.getPredictUrl(lat, lon, 3),
+                ConfigUtil.EVENT_LOAD_PREDICT_WEATHER);
     }
 
-    private void initHeader() {
-        View drawerView = navigationView.inflateHeaderView(R.layout.nav_header_home);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
 
-        ImageView userNameImage = drawerView.findViewById(R.id.header_image);
-        TextView userName = drawerView.findViewById(R.id.header_user_name);
-        TextView userEmail = drawerView.findViewById(R.id.header_user_email);
-        if(user != null){
-            String userFullName = user.getFirstName() + " " + user.getSurName();
-            userName.setText(userFullName);
-            userEmail.setText(user.getEmail());
-        } else {
-            Logger.d("user is null");
-        }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
 
@@ -85,29 +102,72 @@ public class HomeActivity extends BaseActivity
     void loadImage(){
         // 通过此URL获取必应每日图片的URL地址
         String url = "http://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1";
-        String jsonString = HttpUtil.getInstance().get(url);
-        Logger.d("jsonArray : " + jsonString);
-        String imageURL = "http://s.cn.bing.net" + getImageURL(jsonString);
-        if(!imageURL.equals("http://s.cn.bing.net")) {
-            Glide.with(HomeActivity.this)
-                    .load(imageURL)
-                    .into(image_day);
+        HttpUtil.getInstance().get(url, ConfigUtil.EVENT_LOAD_IMAGE);
+    }
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    void showImage(EventUtil eventUtil){
+        if (eventUtil.getEventType() == ConfigUtil.EVENT_LOAD_IMAGE){
+            String jsonString = eventUtil.getResult();
+            String imageURL = "http://s.cn.bing.net" + getImageURL(jsonString);
+            Logger.d("jsonArray : " + jsonString);
+            if(!imageURL.equals("http://s.cn.bing.net")) {
+                Glide.with(HomeActivity.this)
+                        .load(imageURL)
+                        .into(image_day);
+            }
         }
     }
 
-    private String getImageURL(String jsonString) {
-        try {
-            JSONArray jsonArray = new JSONObject(jsonString).getJSONArray("images");
-            for(int i = 0; i < jsonArray.length(); i++){
-                JSONObject object = jsonArray.getJSONObject(i);
-                if(object.has("url")){
-                    return object.getString("url");
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    void getCurrentWeather(EventUtil eventUtil){
+        if(eventUtil.getEventType() == ConfigUtil.EVENT_LOAD_CURRENT_WEATHER) {
+            try {
+                JSONObject jsonObject = new JSONObject(eventUtil.getResult());
+                JSONArray jsonArray = jsonObject.getJSONArray("results");
+                String jsonObjStr = jsonArray.getJSONObject(0).toString();
+                Gson gson = new Gson();
+                CurrentWeather currentWeather = gson.fromJson(jsonObjStr, CurrentWeather.class);
+
+                String cityName = currentWeather.getWeatherLocation().getCity_name();
+                String temperature = currentWeather.getWeatherNow().getTemperature();
+                String weather = currentWeather.getWeatherNow().getWeather_now();
+                String humidity = currentWeather.getWeatherNow().getHumidity();
+                if (cityName != null && temperature != null) {
+                    Logger.d("now");
+                    Logger.d(cityName + ":" + weather + ", " + temperature + ", " + humidity);
+                    tvCurrentWeather.setText(cityName + ":" + weather + ", " + temperature + ", " + humidity);
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
-        return null;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void getPredictWeather(EventUtil eventUtil){
+        if(eventUtil.getEventType() == ConfigUtil.EVENT_LOAD_PREDICT_WEATHER) {
+            try {
+                JSONObject jsonObject = new JSONObject(eventUtil.getResult());
+                JSONArray jsonArray = jsonObject.getJSONArray("results");
+                String jsonObjStr = jsonArray.getJSONObject(0).toString();
+                Gson gson = new Gson();
+                PredictWeather predictWeather = gson.fromJson(jsonObjStr, PredictWeather.class);
+
+                List<WeatherDaily> weatherDailies = predictWeather.getWeatherDailyList();
+                if(weatherDailies != null){
+                    int days = weatherDailies.size();
+                    if(days > 2){
+                        Logger.d("predict");
+                        Logger.d(weatherDailies.get(1).getText_day() + " : " + weatherDailies.get(1).getDate());
+                        tvPredictWeather.setText(weatherDailies.get(1).getText_day() + " : " + weatherDailies.get(1).getDate());
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -175,5 +235,45 @@ public class HomeActivity extends BaseActivity
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void initDrawer() {
+        setSupportActionBar(toolbar);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+        navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void initHeader() {
+        View drawerView = navigationView.inflateHeaderView(R.layout.nav_header_home);
+
+        ImageView userNameImage = drawerView.findViewById(R.id.header_image);
+        TextView userName = drawerView.findViewById(R.id.header_user_name);
+        TextView userEmail = drawerView.findViewById(R.id.header_user_email);
+        if(user != null){
+            String userFullName = user.getFirstName() + " " + user.getSurName();
+            userName.setText(userFullName);
+            userEmail.setText(user.getEmail());
+        } else {
+            Logger.d("user is null");
+        }
+    }
+
+    private String getImageURL(String jsonString) {
+        try {
+            JSONArray jsonArray = new JSONObject(jsonString).getJSONArray("images");
+            for(int i = 0; i < jsonArray.length(); i++){
+                JSONObject object = jsonArray.getJSONObject(i);
+                if(object.has("url")){
+                    return object.getString("url");
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

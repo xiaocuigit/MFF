@@ -20,6 +20,28 @@
             android:textColor="@color/black"
             android:text="load"/>
 
+        <TextClock
+            android:id="@+id/tc_current_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:format24Hour="yyyy/MM/dd HH:mm:ss"
+            android:padding="8dp"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/tv_current_weather"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="weather now"/>
+
+        <TextView
+            android:id="@+id/tv_predict_weather"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="weather predict"/>
+
         <android.support.v7.widget.AppCompatImageView
             android:id="@+id/image_day"
             android:layout_width="match_parent"

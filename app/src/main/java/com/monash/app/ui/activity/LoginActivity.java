@@ -7,12 +7,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.monash.app.App;
 import com.monash.app.R;
 import com.monash.app.bean.User;
 import com.monash.app.bean.weather.CurrentWeather;
 import com.monash.app.bean.weather.PredictWeather;
 import com.monash.app.bean.weather.WeatherDaily;
+import com.monash.app.utils.ConfigUtil;
+import com.monash.app.utils.EventUtil;
 import com.monash.app.utils.GsonUtil;
 import com.monash.app.utils.HttpUtil;
 import com.monash.app.utils.WeatherUtil;
@@ -22,6 +25,9 @@ import com.orhanobut.logger.Logger;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -65,17 +71,9 @@ public class LoginActivity extends AppCompatActivity {
 
     @OnClick(R.id.btn_login)
     void login(){
-//        String lat = "31.27";
-//        String lon = "120.73";
-//        WeatherUtil.getInstance().handleCurrentWeatherInfo(lat, lon);
-//        WeatherUtil.getInstance().handlePredictWeatherInfo(lat, lon, 3);
-
         if(validateInput()){
-            if(isAuthorizedUser()){
-                Intent intent = new Intent(this, HomeActivity.class);
-                startActivity(intent);
-                finish();
-            }
+            // 检测用户输入无误后，向服务器验证该用户的信息
+            HttpUtil.getInstance().get(ConfigUtil.GET_USER_BY_EMAIL + userEmail, ConfigUtil.EVENT_LOGIN);
         }
     }
 
@@ -85,60 +83,27 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    /**
-     * jtao0001@student.monash.edu
-     * 123456
-     * @return
-     */
-    private boolean isAuthorizedUser(){
-        boolean flag = false;
-        String str = "http://192.168.1.108:8080/friendfinder/webresources/app.profile/findByEmail/";
-
-        String userInfo = HttpUtil.getInstance().get(str + userEmail);
-        if(!userInfo.equals("")) {
-            Logger.d(userInfo);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    void checkUserInfo(EventUtil eventUtil){
+        if (eventUtil.getEventType() == ConfigUtil.EVENT_LOGIN){
+            String userInfo = eventUtil.getResult();
+            if (userInfo.equals("")){
+                Logger.d("error");
+                return;
+            }
             User user = GsonUtil.getInstance().getUsers(userInfo).get(0);
             if(user.getPassword().equals(userPassword)){
                 Logger.d(user.getPassword() + "\n" + user.getEmail());
                 Logger.d(user.getFirstName() + " " + user.getSurName());
+
+
                 App.setUser(user);
-                flag = true;
+                Intent intent = new Intent(this, HomeActivity.class);
+                startActivity(intent);
+                finish();
             }else {
                 user_password.setError("Password Incorrect");
                 user_password.setText("");
-            }
-        }
-        else {
-            Logger.d("error");
-            Logger.d(userInfo);
-        }
-        return flag;
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void getCurrentWeather(CurrentWeather currentWeather){
-        if(currentWeather != null) {
-            String cityName = currentWeather.getWeatherLocation().getCity_name();
-            String temperature = currentWeather.getWeatherNow().getTemperature();
-            String weather = currentWeather.getWeatherNow().getWeather_now();
-            String humidity = currentWeather.getWeatherNow().getHumidity();
-            if (cityName != null && temperature != null) {
-                Logger.d("now");
-                Logger.d(cityName + ":" + weather + ", " + temperature + ", " + humidity);
-            }
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void getPredictWeather(PredictWeather predictWeather){
-        if(predictWeather != null) {
-            List<WeatherDaily> weatherDailies = predictWeather.getWeatherDailyList();
-            if(weatherDailies != null){
-                int days = weatherDailies.size();
-                if(days > 2){
-                    Logger.d("predict");
-                    Logger.d(weatherDailies.get(1).getText_day() + " : " + weatherDailies.get(1).getDate());
-                }
             }
         }
     }
@@ -147,7 +112,7 @@ public class LoginActivity extends AppCompatActivity {
         userEmail = user_email.getText().toString();
         userPassword = user_password.getText().toString();
         userEmail = "jtao0001@student.monash.edu";
-//        userPassword = "123456";
+        userPassword = "123456";
 
         boolean flag = true;
 
