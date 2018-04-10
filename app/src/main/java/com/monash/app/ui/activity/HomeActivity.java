@@ -57,15 +57,13 @@ public class HomeActivity extends BaseActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ButterKnife.bind(this);
+        Logger.addLogAdapter(new AndroidLogAdapter());
 
         initDrawer();
         initHeader();
 
         initWeatherInfo();
-
-        ButterKnife.bind(this);
-        Logger.addLogAdapter(new AndroidLogAdapter());
-
         tcCurrentTime.setFormat12Hour("yyyy-MM-dd hh:mm, EEEE");
     }
 
