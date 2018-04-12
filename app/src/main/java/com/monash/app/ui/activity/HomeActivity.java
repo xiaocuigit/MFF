@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.AppCompatImageView;
+import android.text.TextUtils;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,9 +17,15 @@ import android.widget.ImageView;
 import android.widget.TextClock;
 import android.widget.TextView;
 
+import com.amap.api.location.AMapLocation;
+import com.amap.api.location.AMapLocationClient;
+import com.amap.api.location.AMapLocationListener;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.monash.app.R;
+import com.monash.app.bean.FavorUnits;
+import com.monash.app.bean.LocationVisited;
 import com.monash.app.bean.weather.CurrentWeather;
 import com.monash.app.bean.weather.PredictWeather;
 import com.monash.app.bean.weather.WeatherDaily;
@@ -53,7 +60,10 @@ public class HomeActivity extends BaseActivity
     @BindView(R.id.tc_current_time) TextClock tcCurrentTime;
     @BindView(R.id.tv_current_weather) TextView tvCurrentWeather;
     @BindView(R.id.tv_predict_weather) TextView tvPredictWeather;
+    @BindView(R.id.tv_get_location) TextView tvLocation;
 
+    private String latitude = "31.27";
+    private String longitude = "120.73";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,13 +77,35 @@ public class HomeActivity extends BaseActivity
         tcCurrentTime.setFormat12Hour("yyyy-MM-dd hh:mm, EEEE");
     }
 
+    private void initMap() {
+        AMapLocationClient mapLocationClient = new AMapLocationClient(getApplicationContext());
+        AMapLocationListener mapLocationListener = new AMapLocationListener() {
+            @Override
+            public void onLocationChanged(AMapLocation aMapLocation) {
+                if (aMapLocation != null){
+                    if (aMapLocation.getErrorCode() == 0){
+                        Logger.d(aMapLocation.getLatitude() + ", " + aMapLocation.getLongitude());
+
+                        latitude = String.valueOf(aMapLocation.getLatitude());
+                        longitude = String.valueOf(aMapLocation.getLongitude());
+                        tvLocation.setText(String.valueOf(aMapLocation.getLatitude()) + "， " + String.valueOf(aMapLocation.getLongitude()));
+                    }
+                }
+            }
+        };
+        mapLocationClient.setLocationListener(mapLocationListener);
+        mapLocationClient.startLocation();
+    }
+
     private void initWeatherInfo() {
-        String lat = "31.27";
-        String lon = "120.73";
+        if (TextUtils.isEmpty(latitude) || TextUtils.isEmpty(longitude)){
+            Logger.d("Get current location failed.");
+            return;
+        }
         // 向服务器请求天气信息
-        HttpUtil.getInstance().get(WeatherUtil.getCurrentUrl(lat, lon),
+        HttpUtil.getInstance().get(WeatherUtil.getCurrentUrl(latitude, longitude),
                 ConfigUtil.EVENT_LOAD_CURRENT_WEATHER);
-        HttpUtil.getInstance().get(WeatherUtil.getPredictUrl(lat, lon, 3),
+        HttpUtil.getInstance().get(WeatherUtil.getPredictUrl(latitude, longitude, 3),
                 ConfigUtil.EVENT_LOAD_PREDICT_WEATHER);
     }
 
@@ -92,7 +124,8 @@ public class HomeActivity extends BaseActivity
 
     @OnClick(R.id.fab)
     void addFriends(View view){
-        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+        initMap();
+        Snackbar.make(view, "Get Location", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
     }
 
@@ -101,8 +134,8 @@ public class HomeActivity extends BaseActivity
         // 通过此URL获取必应每日图片的URL地址
         String url = "http://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1";
         HttpUtil.getInstance().get(url, ConfigUtil.EVENT_LOAD_IMAGE);
-    }
 
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     void showImage(EventUtil eventUtil){
@@ -221,10 +254,11 @@ public class HomeActivity extends BaseActivity
 
         } else if (id == R.id.nav_search) {
 
-        } else if (id == R.id.nav_units_report) {
-
-        } else if (id == R.id.nav_location_report) {
-
+        } else if (id == R.id.nav_report) {
+            startActivity(new Intent(this, ReportActivity.class));
+        } else if (id == R.id.nav_logout) {
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_about_us) {

@@ -42,6 +42,12 @@
             android:layout_height="wrap_content"
             android:text="weather predict"/>
 
+        <TextView
+            android:id="@+id/tv_get_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lat Long"/>
+
         <android.support.v7.widget.AppCompatImageView
             android:id="@+id/image_day"
             android:layout_width="match_parent"

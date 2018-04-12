@@ -2,9 +2,12 @@ package com.monash.app.ui.activity;
 
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
+import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.TypedValue;
 
 import com.monash.app.App;
+import com.monash.app.R;
 import com.monash.app.bean.User;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
@@ -28,4 +31,14 @@ public abstract class BaseActivity extends AppCompatActivity {
     @LayoutRes
     int getLayoutView();
 
+    protected void initTabLayout(TabLayout tabLayout) {
+        if (tabLayout != null)
+            tabLayout.setBackgroundColor(getColorPrimary());
+    }
+
+    public int getColorPrimary() {
+        TypedValue typedValue = new TypedValue();
+        getTheme().resolveAttribute(R.attr.colorPrimary, typedValue, true);
+        return typedValue.data;
+    }
 }
