@@ -71,7 +71,7 @@ public class SignUpActivity extends AppCompatActivity {
         if (checkInput()){
             JSONObject userInfo = packageJSON();
             try {
-                HttpUtil.getInstance().post(ConfigUtil.USER_REGISTER, userInfo.toString(), ConfigUtil.EVENT_SIGN_UP);
+                HttpUtil.getInstance().post(ConfigUtil.POST_USER_REGISTER, ConfigUtil.EVENT_SIGN_UP, userInfo.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -60,7 +60,7 @@ public class HttpUtil {
      * @return
      * @throws IOException
      */
-    public void post(final String url, final String content, final int eventType) throws IOException {
+    public void post(final String url, final int eventType, final String content) throws IOException {
         new Thread(new Runnable() {
             @Override
             public void run() {

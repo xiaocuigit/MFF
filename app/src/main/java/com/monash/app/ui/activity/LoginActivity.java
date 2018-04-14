@@ -91,19 +91,21 @@ public class LoginActivity extends AppCompatActivity {
                 Logger.d("error");
                 return;
             }
-            User user = GsonUtil.getInstance().getUsers(userInfo).get(0);
-            if(user.getPassword().equals(userPassword)){
-                Logger.d(user.getPassword() + "\n" + user.getEmail());
-                Logger.d(user.getFirstName() + " " + user.getSurName());
+            List<User> users = GsonUtil.getInstance().getUsers(userInfo);
+            if (!users.isEmpty()){
+                User user = users.get(0);
+                if(user.getPassword().equals(userPassword)){
+                    Logger.d(user.getPassword() + "\n" + user.getEmail());
+                    Logger.d(user.getFirstName() + " " + user.getSurName());
 
-
-                App.setUser(user);
-                Intent intent = new Intent(this, HomeActivity.class);
-                startActivity(intent);
-                finish();
-            }else {
-                user_password.setError("Password Incorrect");
-                user_password.setText("");
+                    App.setUser(user);
+                    Intent intent = new Intent(this, HomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                }else {
+                    user_password.setError("Password Incorrect");
+                    user_password.setText("");
+                }
             }
         }
     }

@@ -7,19 +7,20 @@ import com.monash.app.bean.User;
 
 import org.litepal.LitePal;
 
+import java.util.List;
+
 /**
  * Created by abner on 2018/4/7.
  */
 
 public class App extends Application {
 
-    private static Context context;
     private static User user;
+    private static List<User> users;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        context = getApplicationContext();
         LitePal.initialize(this);
     }
 
@@ -34,7 +35,11 @@ public class App extends Application {
         user = mUser;
     }
 
-    public static Context getContext() {
-        return context;
+    public static List<User> getUsers() {
+        return users;
+    }
+
+    public static void setUsers(List<User> users) {
+        App.users = users;
     }
 }

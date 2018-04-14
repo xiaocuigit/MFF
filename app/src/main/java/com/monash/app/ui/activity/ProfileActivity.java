@@ -1,8 +1,11 @@
 package com.monash.app.ui.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatSpinner;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -20,10 +23,21 @@ import butterknife.OnTextChanged;
 
 import com.bumptech.glide.load.engine.Resource;
 import com.codetroopers.betterpickers.calendardatepicker.CalendarDatePickerDialogFragment;
+import com.github.mikephil.charting.data.PieData;
 import com.monash.app.R;
+import com.monash.app.utils.ConfigUtil;
+import com.monash.app.utils.EventUtil;
+import com.monash.app.utils.HttpUtil;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -54,8 +68,34 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     @BindView(R.id.sp_favoriteUnit) Spinner spFavUnit;
     @BindView(R.id.tv_subscribeDate) TextView tvSubscribeDate;
 
+
     private String gender;
-    private String studyModel;
+    private String course;
+    private String studyMode;
+    private String address;
+    private String suburb;
+    private String nationality;
+    private String language;
+    private String favSport;
+    private String favUnit;
+    private String favMovie;
+    private String birthDate;
+    private String subscriptionDate;
+
+
+    private void showTipDialog(String text) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Tip");
+        builder.setMessage("Please input your " + text);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        builder.show();
+    }
+
     private static String CHANGE_BIRTH_DATE = "CHANGE_BIRTH_DATE";
     private static String CHANGE_SUBSCRIBE_DATE = "CHANGE_SUBSCRIBE_DATE";
     private boolean isChanged = false;
@@ -63,11 +103,17 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        ButterKnife.bind(this);
-        Logger.addLogAdapter(new AndroidLogAdapter());
+
+        init();
         initUserInfo();
         initListener();
+    }
+
+    private void init(){
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ButterKnife.bind(this);
+        EventBus.getDefault().register(this);
+        Logger.addLogAdapter(new AndroidLogAdapter());
     }
 
     private void initListener() {
@@ -95,10 +141,10 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
                 int id = group.getCheckedRadioButtonId();
                 switch (id){
                     case R.id.rb_fullTime:
-                        studyModel = rbFullTime.getText().toString();
+                        studyMode = rbFullTime.getText().toString();
                         break;
                     case R.id.rb_partTime:
-                        studyModel = rbPartTime.getText().toString();
+                        studyMode = rbPartTime.getText().toString();
                         break;
                 }
             }
@@ -163,7 +209,9 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
         }
         etAddress.setText(user.getAddress());
         etSuburb.setText(user.getSuburb());
-        etCurrentJob.setText(user.getCurrentJob());
+        if (!TextUtils.isEmpty(user.getCurrentJob())){
+            etCurrentJob.setText(user.getCurrentJob());
+        }
         etFavMovie.setText(user.getFavMovie());
         String[] sports = getResources().getStringArray(R.array.sports);
         String[] units = getResources().getStringArray(R.array.units);
@@ -205,6 +253,7 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
             return null;
 
     }
+
     private String captureFirstLetter(String str){
         char[] arr = str.toCharArray();
         if (arr[0] >= 'a') {
@@ -212,6 +261,7 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
         }
         return String.valueOf(arr);
     }
+
     @Override
     protected int getLayoutView() {
         return R.layout.activity_profile;
@@ -220,22 +270,108 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     @OnClick(R.id.btn_saveProfile)
     void saveProfileChange(){
         if (checkChangedInfo()){
-            Intent intent = new Intent(this, HomeActivity.class);
-            startActivity(intent);
-            finish();
+            JSONObject jsonObject = packageJSON();
+            try {
+                HttpUtil.getInstance().post(ConfigUtil.POST_USER_UPDATE, ConfigUtil.EVENT_EDIT_USER_INFO, jsonObject.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private JSONObject packageJSON() {
+        JSONObject jsonObject = new JSONObject();
+        if (user != null){
+            try {
+                jsonObject.put("studID", user.getStudID());
+                jsonObject.put("firstName", user.getFirstName());
+                jsonObject.put("surName", user.getSurName());
+                jsonObject.put("email", user.getEmail());
+                jsonObject.put("password", user.getPassword());
+                jsonObject.put("gender", gender);
+                jsonObject.put("course", course);
+                jsonObject.put("studyMode", studyMode);
+                jsonObject.put("address", address);
+                jsonObject.put("suburb", suburb);
+                jsonObject.put("nationality", nationality);
+                jsonObject.put("language", language);
+                jsonObject.put("favSport", favSport);
+                jsonObject.put("favUnit", favUnit);
+                jsonObject.put("favMovie", favMovie);
+                jsonObject.put("currentJob", etCurrentJob.getText());
+                jsonObject.put("birthDate", birthDate);
+                jsonObject.put("subscriptionDate", subscriptionDate);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return jsonObject;
+        } else {
+            return null;
         }
     }
 
     private boolean checkChangedInfo() {
-
-        return false;
+        if (TextUtils.isEmpty(birthDate)){
+            showTipDialog("BirthDay");
+            return false;
+        }
+        if (TextUtils.isEmpty(gender)){
+            showTipDialog("Gender");
+            return false;
+        }
+        if (TextUtils.isEmpty(studyMode)){
+            showTipDialog("StudyMode");
+            return false;
+        }
+        if (course.length() > 10){
+            showTipDialog("Course");
+            return false;
+        }
+        if (TextUtils.isEmpty(nationality)){
+            showTipDialog("Nationality");
+            return false;
+        }
+        if (TextUtils.isEmpty("Language")){
+            showTipDialog("Language");
+            return false;
+        }
+        if (TextUtils.isEmpty(address)){
+            showTipDialog("Address");
+            return false;
+        }
+        if (TextUtils.isEmpty(suburb)){
+            showTipDialog("Suburb");
+            return false;
+        }
+        if (TextUtils.isEmpty(favMovie)){
+            showTipDialog("Favorite Movie");
+            return false;
+        }
+        if (TextUtils.isEmpty(favSport)){
+            showTipDialog("Favorite Sport");
+            return false;
+        }
+        if (TextUtils.isEmpty(favUnit)){
+            showTipDialog("Favorite Unit");
+            return false;
+        }
+        return true;
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    void saveUserInfoSuccess(EventUtil eventUtil){
+        if (eventUtil.getEventType() == ConfigUtil.EVENT_EDIT_USER_INFO){
+            Logger.d(eventUtil.getResult());
+            startActivity(new Intent(this, HomeActivity.class));
+            finish();
+        }
+    }
 
     @OnTextChanged(R.id.et_nationality)
     public void onNationalityChanged(){
         if (user != null) {
             user.setNationality(captureFirstLetter(etNationality.getText().toString()));
+            nationality = captureFirstLetter(etNationality.getText().toString());
             isChanged = true;
         }
     }
@@ -244,6 +380,7 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     public void onLanguageChanged(){
         if (user != null) {
             user.setLanguage(captureFirstLetter(etLanguage.getText().toString()));
+            language = captureFirstLetter(etLanguage.getText().toString());
             isChanged = true;
         }
     }
@@ -252,6 +389,7 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     public void onAddressChanged(){
         if (user != null) {
             user.setAddress(etAddress.getText().toString());
+            address = etAddress.getText().toString();
             isChanged = true;
         }
     }
@@ -260,6 +398,7 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     public void onSuburbChanged(){
         if (user != null) {
             user.setSuburb(etSuburb.getText().toString());
+            suburb = etSuburb.getText().toString();
             isChanged = true;
         }
     }
@@ -276,16 +415,18 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     public void onMovieChanged(){
         if (user != null) {
             user.setFavMovie(etFavMovie.getText().toString());
+            favMovie = etFavMovie.getText().toString();
             isChanged = true;
         }
     }
 
     @OnItemSelected(R.id.sp_course)
     public void onCourseItemSelected(){
-        String course = spCourse.getSelectedItem().toString();
-        if (course != null && user != null){
-            Logger.d(course);
-            user.setCourse(course);
+        String course_temp = spCourse.getSelectedItem().toString();
+        if (course_temp != null && user != null){
+            Logger.d(course_temp);
+            user.setCourse(course_temp);
+            course = course_temp;
             isChanged = true;
         }
     }
@@ -296,6 +437,7 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
         if (sport != null && user != null) {
             Logger.d(sport);
             user.setFavSport(spFavSport.getSelectedItem().toString());
+            favSport = sport;
             isChanged = true;
         }
     }
@@ -306,6 +448,7 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
         if (unit != null && user != null){
             Logger.d(unit);
             user.setFavUnit(spFavUnit.getSelectedItem().toString());
+            favUnit = unit;
             isChanged = true;
         }
     }
@@ -334,14 +477,21 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     @Override
     public void onDateSet(CalendarDatePickerDialogFragment dialog, int year, int monthOfYear, int dayOfMonth) {
         Calendar calendar = Calendar.getInstance();
-        calendar.set(year, monthOfYear - 1, dayOfMonth);
+        calendar.set(year, monthOfYear, dayOfMonth);
         Date date = calendar.getTime();
         String tag = dialog.getTag();
         isChanged = true;
         if (tag.equals(CHANGE_BIRTH_DATE)) {
             tvUserBirthDate.setText(handleDate(date));
+
+            birthDate = String.format(getResources().getString(R.string.date_format),
+                    String.valueOf(year), String.valueOf(monthOfYear + 1), String.valueOf(dayOfMonth));
+
         } else {
             tvSubscribeDate.setText(handleDate(date));
+
+            subscriptionDate = String.format(getResources().getString(R.string.date_format),
+                    String.valueOf(year), String.valueOf(monthOfYear + 1), String.valueOf(dayOfMonth));
         }
     }
 

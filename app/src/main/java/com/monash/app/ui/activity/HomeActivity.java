@@ -22,10 +22,7 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationListener;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.monash.app.R;
-import com.monash.app.bean.FavorUnits;
-import com.monash.app.bean.LocationVisited;
 import com.monash.app.bean.weather.CurrentWeather;
 import com.monash.app.bean.weather.PredictWeather;
 import com.monash.app.bean.weather.WeatherDaily;
@@ -251,9 +248,9 @@ public class HomeActivity extends BaseActivity
             Intent intent = new Intent(this, ProfileActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_friends) {
-
+            startActivity(new Intent(this, FriendsActivity.class));
         } else if (id == R.id.nav_search) {
-
+            startActivity(new Intent(this, SearchActivity.class));
         } else if (id == R.id.nav_report) {
             startActivity(new Intent(this, ReportActivity.class));
         } else if (id == R.id.nav_logout) {

@@ -4,9 +4,11 @@ import java.util.Date;
 
 /**
  * Created by abner on 2018/4/5.
+ *
  */
 
 public class User {
+
     private Integer studID;
     private String firstName;
     private String surName;
