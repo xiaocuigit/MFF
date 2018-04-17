@@ -3,6 +3,7 @@ package com.monash.app;
 import android.app.Application;
 import android.content.Context;
 
+import com.monash.app.bean.Friend;
 import com.monash.app.bean.User;
 
 import org.litepal.LitePal;
@@ -17,6 +18,7 @@ public class App extends Application {
 
     private static User user;
     private static List<User> users;
+    private static List<Friend> friends;
 
     @Override
     public void onCreate() {
@@ -41,5 +43,13 @@ public class App extends Application {
 
     public static void setUsers(List<User> users) {
         App.users = users;
+    }
+
+    public static List<Friend> getFriends() {
+        return friends;
+    }
+
+    public static void setFriends(List<Friend> friends) {
+        App.friends = friends;
     }
 }

@@ -1,6 +1,7 @@
 package com.monash.app.ui.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.AppCompatImageView;
@@ -22,7 +23,10 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationListener;
 import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.monash.app.App;
 import com.monash.app.R;
+import com.monash.app.bean.Friend;
 import com.monash.app.bean.weather.CurrentWeather;
 import com.monash.app.bean.weather.PredictWeather;
 import com.monash.app.bean.weather.WeatherDaily;
@@ -198,6 +202,16 @@ public class HomeActivity extends BaseActivity
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    void getFriends(EventUtil eventUtil){
+        if (eventUtil.getEventType() == ConfigUtil.EVENT_GET_USER_FRIENDS){
+            Gson gson = new Gson();
+            List<Friend> friends = gson.fromJson(eventUtil.getResult(), new TypeToken<List<Friend> >(){}.getType());
+            App.setFriends(friends);
+            Logger.d(friends);
+            startActivity(new Intent(this, FriendsActivity.class));
+        }
+    }
 
     @Override
     protected int getLayoutView() {
@@ -248,7 +262,10 @@ public class HomeActivity extends BaseActivity
             Intent intent = new Intent(this, ProfileActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_friends) {
-            startActivity(new Intent(this, FriendsActivity.class));
+            if (user != null){
+                String url = ConfigUtil.GET_USER_FRIENDS + String.valueOf(user.getStudID());
+                HttpUtil.getInstance().get(url, ConfigUtil.EVENT_GET_USER_FRIENDS);
+            }
         } else if (id == R.id.nav_search) {
             startActivity(new Intent(this, SearchActivity.class));
         } else if (id == R.id.nav_report) {

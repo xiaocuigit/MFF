@@ -1,5 +1,7 @@
 package com.monash.app.utils;
 
+import java.security.PublicKey;
+
 /**
  * Created by abner on 2018/4/9.
  *
@@ -16,6 +18,7 @@ public class ConfigUtil {
     public static String GET_SEARCH_FRIENDS = BASE_PROFILE_URL + "findByAnyAttribute/";
     public static String GET_USER_BY_EMAIL = BASE_PROFILE_URL + "findByEmail/";
     public static String GET_UNITS_REPORTS = BASE_PROFILE_URL + "countFavUnit";
+    public static String GET_USER_FRIENDS = BASE_FRIEND_URL + "searchFriends/";
     public static String GET_LOCATION_REPORT = BASE_LOCATION_URL + "countFrequency/";
 
     public static String GET_FRIEND_BY_ID = BASE_FRIEND_URL + "findByFriendshipID/";
@@ -38,4 +41,5 @@ public class ConfigUtil {
     public static int EVENT_GET_LOCATION_REPORT = 7;
     public static int EVENT_ADD_FRIEND = 8;
     public static int EVENT_SEARCH_FRIENDS = 9;
+    public static int EVENT_GET_USER_FRIENDS = 10;
 }

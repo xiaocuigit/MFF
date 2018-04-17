@@ -1,5 +1,6 @@
 package com.monash.app.bean;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Date;
  *
  */
 
-public class User {
+public class User implements Serializable {
 
     private Integer studID;
     private String firstName;

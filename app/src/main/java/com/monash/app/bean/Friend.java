@@ -1,32 +1,19 @@
 package com.monash.app.bean;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
+
 /**
  * Created by abner on 2018/4/14.
  *
  */
 
-public class Friend {
-    private Integer friendID;
-    private String friendName;
-    private String friendEmail;
+public class Friend implements Serializable {
     private String startDate;
-    private String endDate;
 
-    public String getFriendName() {
-        return friendName;
-    }
-
-    public void setFriendName(String friendName) {
-        this.friendName = friendName;
-    }
-
-    public String getFriendEmail() {
-        return friendEmail;
-    }
-
-    public void setFriendEmail(String friendEmail) {
-        this.friendEmail = friendEmail;
-    }
+    @SerializedName("student")
+    private User friend;
 
     public String getStartDate() {
         return startDate;
@@ -36,11 +23,11 @@ public class Friend {
         this.startDate = startDate;
     }
 
-    public String getEndDate() {
-        return endDate;
+    public User getFriend() {
+        return friend;
     }
 
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
+    public void setFriend(User friend) {
+        this.friend = friend;
     }
 }

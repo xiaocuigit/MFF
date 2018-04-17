@@ -3,7 +3,6 @@ package com.monash.app.ui.activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,12 +11,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
-import android.widget.TextView;
 
 import com.monash.app.App;
 import com.monash.app.R;
 import com.monash.app.adapter.BaseRecyclerViewAdapter;
-import com.monash.app.adapter.FriendsAdapter;
+import com.monash.app.adapter.FriendsSearchedAdapter;
 import com.monash.app.bean.User;
 import com.monash.app.utils.ConfigUtil;
 import com.monash.app.utils.EventUtil;
@@ -33,7 +31,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -45,7 +42,7 @@ public class SearchResultsActivity extends BaseActivity {
 
     @BindView(R.id.recyclerView_friends) RecyclerView recyclerView;
 
-    private FriendsAdapter recyclerAdapter;
+    private FriendsSearchedAdapter recyclerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +71,7 @@ public class SearchResultsActivity extends BaseActivity {
         recyclerView.setHasFixedSize(true);
 
         if (users != null)
-            recyclerAdapter = new FriendsAdapter(users, this);
+            recyclerAdapter = new FriendsSearchedAdapter(users, this);
 
         recyclerAdapter.setOnInViewClickListener(R.id.friends_item_root,
                 new BaseRecyclerViewAdapter.onInternalClickListenerImpl<User>(){
@@ -124,8 +121,10 @@ public class SearchResultsActivity extends BaseActivity {
     }
 
     private void showDetailInfo(User user){
-        EventBus.getDefault().post(user);
-        startActivity(new Intent(this, FriendInfoActivity.class));
+        Intent intent = new Intent(this, FriendInfoActivity.class);
+        intent.putExtra("tag", "search");
+        intent.putExtra("search", user);
+        startActivity(intent);
     }
 
     private void addFriend(User friend){
@@ -191,6 +190,7 @@ public class SearchResultsActivity extends BaseActivity {
                 finish();
                 break;
             case R.id.action_settings:
+                //在这里启动地图界面
                 break;
         }
         return super.onOptionsItemSelected(item);
