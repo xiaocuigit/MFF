@@ -56,7 +56,6 @@ public class FriendsAdapter extends BaseRecyclerViewAdapter<Friend> {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
-        // 这里也出过问题。
         View view = LayoutInflater.from(context).inflate(R.layout.friends_item_layout, parent, false);
         return new FriendsItemViewHolder(view);
     }
@@ -71,7 +70,7 @@ public class FriendsAdapter extends BaseRecyclerViewAdapter<Friend> {
 
         if (friend == null)
             return;
-        holder.setNameText(friend.getFriend().getSurName() + friend.getFriend().getFirstName());
+        holder.setNameText(friend.getFriend().getSurName() + " " + friend.getFriend().getFirstName());
         holder.setEmailText(friend.getFriend().getEmail());
         holder.setGenderText(friend.getFriend().getGender());
         holder.setCourseText(friend.getFriend().getCourse());

@@ -1,7 +1,9 @@
 package com.monash.app.ui.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
@@ -14,9 +16,20 @@ import com.monash.app.R;
 import com.monash.app.adapter.BaseRecyclerViewAdapter;
 import com.monash.app.adapter.FriendsAdapter;
 import com.monash.app.bean.Friend;
+import com.monash.app.bean.User;
+import com.monash.app.utils.ConfigUtil;
+import com.monash.app.utils.EventUtil;
+import com.monash.app.utils.HttpUtil;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,9 +59,64 @@ public class FriendsActivity extends BaseActivity {
     private void init() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("Friends");
-
+        EventBus.getDefault().register(this);
         ButterKnife.bind(this);
         Logger.addLogAdapter(new AndroidLogAdapter());
+    }
+
+    private void deleteFriend(final Friend friend) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Tip");
+        builder.setMessage("Delete this friend forever!!!");
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        updateLists(friend);
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+        builder.setPositiveButton("OK", listener);
+        builder.setNegativeButton("Cancel", listener);
+        builder.show();
+    }
+
+    private void updateLists(Friend friend) {
+        User user = App.getUser();
+        if (user != null && friend != null) {
+            JSONObject jsonObject = packageJSON(user, friend);
+            try {
+                // 向服务器请求函数该朋友
+                HttpUtil.getInstance().post(ConfigUtil.POST_DELETE_FRIEND, ConfigUtil.EVENT_DELETE_FRIEND, jsonObject.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        friends.remove(friend);
+        App.setFriends(friends);
+        recyclerAdapter.notifyDataSetChanged();
+    }
+
+    private JSONObject packageJSON(User user, Friend friend) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("studID", user.getStudID());
+            jsonObject.put("friendID", friend.getFriend().getStudID());
+            Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DATE);
+            String endDate = String.format(getResources().getString(R.string.date_format),
+                    String.valueOf(year), String.valueOf(month), String.valueOf(day));
+            jsonObject.put("endDate", endDate);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
     }
 
     private void initRecyclerView() {
@@ -100,6 +168,7 @@ public class FriendsActivity extends BaseActivity {
                 int id = item.getItemId();
                 switch (id) {
                     case R.id.delete:
+                        deleteFriend(friend);
                         break;
                     default:
                         break;
@@ -108,6 +177,13 @@ public class FriendsActivity extends BaseActivity {
             }
         });
         popup.show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.BACKGROUND)
+    void deleteFriendInfo(EventUtil eventUtil){
+        if (eventUtil.getEventType() == ConfigUtil.EVENT_DELETE_FRIEND){
+            Logger.d(eventUtil.getResult());
+        }
     }
 
     @Override
@@ -123,5 +199,11 @@ public class FriendsActivity extends BaseActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }

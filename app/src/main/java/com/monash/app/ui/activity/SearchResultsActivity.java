@@ -16,6 +16,7 @@ import com.monash.app.App;
 import com.monash.app.R;
 import com.monash.app.adapter.BaseRecyclerViewAdapter;
 import com.monash.app.adapter.FriendsSearchedAdapter;
+import com.monash.app.bean.Friend;
 import com.monash.app.bean.User;
 import com.monash.app.utils.ConfigUtil;
 import com.monash.app.utils.EventUtil;
@@ -127,10 +128,33 @@ public class SearchResultsActivity extends BaseActivity {
         startActivity(intent);
     }
 
-    private void addFriend(User friend){
-        if (user != null){
+    private void addFriend(final User friend){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Tip");
+        builder.setMessage("Add this friend to your friends list???");
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        updateLists(friend);
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+        builder.setPositiveButton("OK", listener);
+        builder.setNegativeButton("Cancel", listener);
+        builder.show();
+    }
+
+    private void updateLists(User friend) {
+        User user = App.getUser();
+        if (user != null && friend != null) {
             JSONObject jsonObject = packageJSON(user, friend);
             try {
+                // 向服务器请求函数该朋友
                 HttpUtil.getInstance().post(ConfigUtil.POST_ADD_FRIEND, ConfigUtil.EVENT_ADD_FRIEND, jsonObject.toString());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -162,11 +186,6 @@ public class SearchResultsActivity extends BaseActivity {
         if (eventUtil.getEventType() == ConfigUtil.EVENT_ADD_FRIEND){
             String result = eventUtil.getResult();
             Logger.d(result);
-            if (TextUtils.isEmpty(result)){
-                showTipDialog("Add Friend Success");
-            } else {
-                showTipDialog("You have added this friend");
-            }
         }
     }
 

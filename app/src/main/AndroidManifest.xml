@@ -67,7 +67,10 @@
         <activity android:name=".ui.activity.FriendsActivity" />
         <activity android:name=".ui.activity.SearchActivity" />
         <activity android:name=".ui.activity.SearchResultsActivity" />
-        <activity android:name=".ui.activity.FriendInfoActivity"></activity>
+        <activity android:name=".ui.activity.FriendInfoActivity" />
+        <activity
+            android:name=".ui.activity.MovieInfoActivity"
+            android:theme="@style/dialogstyle"/>
     </application>
 
 </manifest>

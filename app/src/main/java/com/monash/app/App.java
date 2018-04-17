@@ -3,6 +3,7 @@ package com.monash.app;
 import android.app.Application;
 import android.content.Context;
 
+import com.github.mikephil.charting.formatter.IFillFormatter;
 import com.monash.app.bean.Friend;
 import com.monash.app.bean.User;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 /**
  * Created by abner on 2018/4/7.
+ *
  */
 
 public class App extends Application {
