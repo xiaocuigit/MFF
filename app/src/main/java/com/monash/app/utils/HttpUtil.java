@@ -1,5 +1,7 @@
 package com.monash.app.utils;
 
+import android.util.Log;
+
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
@@ -42,8 +44,12 @@ public class HttpUtil {
                 try{
                     Request request = new Request.Builder().url(url).build();
                     Response response = client.newCall(request).execute();
+
                     if (response.isSuccessful()) {
                         EventBus.getDefault().post(new EventUtil(eventType, response.body().string()));
+                    } else {
+                        Log.d("error", response.message());
+                        Log.d("errorCode", String.valueOf(response.code()));
                     }
                 }catch (IOException e){
                     e.printStackTrace();
@@ -72,6 +78,9 @@ public class HttpUtil {
                     Response response = client.newCall(request).execute();
                     if (response.isSuccessful()) {
                         EventBus.getDefault().post(new EventUtil(eventType, response.body().string()));
+                    } else {
+                        Log.d("error", response.message());
+                        Log.d("errorCode", String.valueOf(response.code()));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

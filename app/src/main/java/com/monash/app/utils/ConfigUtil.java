@@ -17,7 +17,7 @@ public class ConfigUtil {
     public static String GET_MOVIE_SUMMARY = "http://api.douban.com/v2/movie/subject/";
 
     public static String POST_USER_REGISTER = BASE_PROFILE_URL + "register/";
-    public static String POST_USER_UPDATE = BASE_PROFILE_URL + "";
+    public static String POST_USER_UPDATE = BASE_PROFILE_URL + "completeInfo/";
 
     public static String GET_SEARCH_FRIENDS = BASE_PROFILE_URL + "findByAnyAttribute/";
     public static String GET_USER_BY_EMAIL = BASE_PROFILE_URL + "findByEmail/";

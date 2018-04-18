@@ -83,19 +83,6 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
     private String subscriptionDate;
 
 
-    private void showTipDialog(String text) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Tip");
-        builder.setMessage("Please input your " + text);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-            }
-        });
-        builder.show();
-    }
-
     private static String CHANGE_BIRTH_DATE = "CHANGE_BIRTH_DATE";
     private static String CHANGE_SUBSCRIBE_DATE = "CHANGE_SUBSCRIBE_DATE";
     private boolean isChanged = false;
@@ -161,23 +148,27 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
         tvUserEmail.setText(user.getEmail());
         String userName = user.getSurName() + " " + user.getFirstName();
         tvUserFullName.setText(userName);
-        String birthDate = handleDate(user.getBirthDate());
-        if (birthDate != null)
-            tvUserBirthDate.setText(birthDate);
-        String gender = user.getGender();
+        String birthDateTemp = handleDate(user.getBirthDate());
+        if (birthDateTemp != null)
+            tvUserBirthDate.setText(birthDateTemp);
+        // 日期改成String类型的。
+        birthDate = changeDateToString(user.getBirthDate());
+
+        gender = user.getGender();
         if (gender != null){
-            if (gender.equals("M")){
+            if (gender.equals("male")){
                 rgUserGenderGroup.check(rbMale.getId());
-            } else if (gender.equals("F")){
+            } else if (gender.equals("female")){
                 rgUserGenderGroup.check(rbFemale.getId());
             } else {
                 rgUserGenderGroup.check(rbSecret.getId());
             }
         }
 
-        String model = user.getStudyMode();
-        if (model != null){
-            if(model.equals("full-time")){
+        studyMode = user.getStudyMode();
+        Logger.d(studyMode);
+        if (studyMode != null){
+            if(studyMode.equals("full-time")){
                 rgStudyModeGroup.check(rbFullTime.getId());
             } else {
                 rgStudyModeGroup.check(rbPartTime.getId());
@@ -229,9 +220,8 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
             spFavSport.setSelection(0, true);
         }
         if (favUnit != null){
-            favUnit = favUnit.toLowerCase();
             for (int i = 1; i < units.length; i++){
-                if (favUnit.equals(units[i].toLowerCase())){
+                if (favUnit.equals(units[i])){
                     spFavUnit.setSelection(i, true);
                 }
             }
@@ -239,11 +229,23 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
             spFavUnit.setSelection(0, true);
         }
         etFavMovie.setText(user.getFavMovie());
-        String subscriptionDate = handleDate(user.getSubscriptionDate());
-        if (subscriptionDate != null){
-            tvSubscribeDate.setText(subscriptionDate);
+        String subscriptionDateTemp = handleDate(user.getSubscriptionDate());
+        if (subscriptionDateTemp != null){
+            tvSubscribeDate.setText(subscriptionDateTemp);
         }
+        subscriptionDate = changeDateToString(user.getSubscriptionDate());
         isChanged = false;
+    }
+
+    private String changeDateToString(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DATE);
+        String dateStr = String.format(getResources().getString(R.string.date_format),
+                String.valueOf(year), String.valueOf(month), String.valueOf(day));
+        return dateStr;
     }
 
     private String handleDate(Date date){
@@ -253,6 +255,20 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
             return null;
 
     }
+
+    private void showTipDialog(String text) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Tip");
+        builder.setMessage("Please input your " + text);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        builder.show();
+    }
+
 
     private String captureFirstLetter(String str){
         char[] arr = str.toCharArray();
@@ -269,10 +285,10 @@ public class ProfileActivity extends BaseActivity implements CalendarDatePickerD
 
     @OnClick(R.id.btn_saveProfile)
     void saveProfileChange(){
-        if (checkChangedInfo()){
+        if (checkChangedInfo() && user != null){
             JSONObject jsonObject = packageJSON();
             try {
-                HttpUtil.getInstance().post(ConfigUtil.POST_USER_UPDATE, ConfigUtil.EVENT_EDIT_USER_INFO, jsonObject.toString());
+                HttpUtil.getInstance().post(ConfigUtil.POST_USER_UPDATE + user.getStudID(), ConfigUtil.EVENT_EDIT_USER_INFO, jsonObject.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }
