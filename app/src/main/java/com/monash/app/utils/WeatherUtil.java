@@ -16,7 +16,7 @@ import org.json.JSONObject;
 public class WeatherUtil {
     private static String LANGUAGE = "zh-Hans";
     private static String UNIT = "c";
-    private static String KEY = "tvskoyndgiuabzet";
+    private static String KEY = "nf2fsvb0v3abpuww";
 
     /**
      * 获取访问心知天气服务器未来几天的天气信息的URL

@@ -30,6 +30,7 @@ import com.monash.app.bean.Friend;
 import com.monash.app.bean.weather.CurrentWeather;
 import com.monash.app.bean.weather.PredictWeather;
 import com.monash.app.bean.weather.WeatherDaily;
+import com.monash.app.utils.ClassUtil;
 import com.monash.app.utils.ConfigUtil;
 import com.monash.app.utils.EventUtil;
 import com.monash.app.utils.HttpUtil;
@@ -54,14 +55,38 @@ import butterknife.OnClick;
 public class HomeActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    @BindView(R.id.image_day) AppCompatImageView image_day;
     @BindView(R.id.toolbar) Toolbar toolbar;
     @BindView(R.id.nav_view) NavigationView navigationView;
     @BindView(R.id.drawer_layout) DrawerLayout drawer;
-    @BindView(R.id.tc_current_time) TextClock tcCurrentTime;
-    @BindView(R.id.tv_current_weather) TextView tvCurrentWeather;
-    @BindView(R.id.tv_predict_weather) TextView tvPredictWeather;
-    @BindView(R.id.tv_get_location) TextView tvLocation;
+    @BindView(R.id.cur_temp_num) TextView tvCurrentTemp;
+    @BindView(R.id.cur_time) TextClock tvCurrentTime;
+    @BindView(R.id.city_name) TextView tvCityName;
+    @BindView(R.id.weather_type) TextView tvWeatherType;
+    @BindView(R.id.humidity) TextView tvHumidity;
+    @BindView(R.id.visibility) TextView tvVisibility;
+    @BindView(R.id.wind_direction) TextView tvWindDirection;
+    @BindView(R.id.current_weather_img) ImageView ivCurrentWeather;
+
+    @BindView(R.id.predict_weather_type_img1) ImageView ivPredictImage1;
+    @BindView(R.id.predict_weather_type_img2) ImageView ivPredictImage2;
+    @BindView(R.id.predict_weather_type_img3) ImageView ivPredictImage3;
+    @BindView(R.id.predict_weather_type_img4) ImageView ivPredictImage4;
+    @BindView(R.id.predict_lower_higher_temp_1) TextView tvLowerHigherTemp1;
+    @BindView(R.id.predict_lower_higher_temp_2) TextView tvLowerHigherTemp2;
+    @BindView(R.id.predict_lower_higher_temp_3) TextView tvLowerHigherTemp3;
+    @BindView(R.id.predict_lower_higher_temp_4) TextView tvLowerHigherTemp4;
+    @BindView(R.id.predict_wind_power_1) TextView tvPredictWind1;
+    @BindView(R.id.predict_wind_power_2) TextView tvPredictWind2;
+    @BindView(R.id.predict_wind_power_3) TextView tvPredictWind3;
+    @BindView(R.id.predict_wind_power_4) TextView tvPredictWind4;
+    @BindView(R.id.predict_weather_type_1) TextView tvPredictWeatherType1;
+    @BindView(R.id.predict_weather_type_2) TextView tvPredictWeatherType2;
+    @BindView(R.id.predict_weather_type_3) TextView tvPredictWeatherType3;
+    @BindView(R.id.predict_weather_type_4) TextView tvPredictWeatherType4;
+    @BindView(R.id.predict_one) TextView tvPredict1;
+    @BindView(R.id.predict_two) TextView tvPredict2;
+    @BindView(R.id.predict_three) TextView tvPredict3;
+    @BindView(R.id.predict_four) TextView tvPredict4;
 
     private String latitude = "31.27";
     private String longitude = "120.73";
@@ -75,7 +100,7 @@ public class HomeActivity extends BaseActivity
         initHeader();
 
         initWeatherInfo();
-        tcCurrentTime.setFormat12Hour("yyyy-MM-dd hh:mm, EEEE");
+        tvCurrentTime.setFormat12Hour("hh:mm");
     }
 
     private void initMap() {
@@ -89,7 +114,6 @@ public class HomeActivity extends BaseActivity
 
                         latitude = String.valueOf(aMapLocation.getLatitude());
                         longitude = String.valueOf(aMapLocation.getLongitude());
-                        tvLocation.setText(String.valueOf(aMapLocation.getLatitude()) + "， " + String.valueOf(aMapLocation.getLongitude()));
                     }
                 }
             }
@@ -106,7 +130,7 @@ public class HomeActivity extends BaseActivity
         // 向服务器请求天气信息
         HttpUtil.getInstance().get(WeatherUtil.getCurrentUrl(latitude, longitude),
                 ConfigUtil.EVENT_LOAD_CURRENT_WEATHER);
-        HttpUtil.getInstance().get(WeatherUtil.getPredictUrl(latitude, longitude, 3),
+        HttpUtil.getInstance().get(WeatherUtil.getPredictUrl(latitude, longitude, 4),
                 ConfigUtil.EVENT_LOAD_PREDICT_WEATHER);
     }
 
@@ -122,36 +146,6 @@ public class HomeActivity extends BaseActivity
         EventBus.getDefault().unregister(this);
     }
 
-
-    @OnClick(R.id.fab)
-    void addFriends(View view){
-        initMap();
-        Snackbar.make(view, "Get Location", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
-    }
-
-    @OnClick(R.id.btn_load_image)
-    void loadImage(){
-        // 通过此URL获取必应每日图片的URL地址
-        String url = "http://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1";
-        HttpUtil.getInstance().get(url, ConfigUtil.EVENT_LOAD_IMAGE);
-
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    void showImage(EventUtil eventUtil){
-        if (eventUtil.getEventType() == ConfigUtil.EVENT_LOAD_IMAGE){
-            String jsonString = eventUtil.getResult();
-            String imageURL = "http://s.cn.bing.net" + getImageURL(jsonString);
-            Logger.d("jsonArray : " + jsonString);
-            if(!imageURL.equals("http://s.cn.bing.net")) {
-                Glide.with(HomeActivity.this)
-                        .load(imageURL)
-                        .into(image_day);
-            }
-        }
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     void getCurrentWeather(EventUtil eventUtil){
         if(eventUtil.getEventType() == ConfigUtil.EVENT_LOAD_CURRENT_WEATHER) {
@@ -164,12 +158,20 @@ public class HomeActivity extends BaseActivity
 
                 String cityName = currentWeather.getWeatherLocation().getCity_name();
                 String temperature = currentWeather.getWeatherNow().getTemperature();
-                String weather = currentWeather.getWeatherNow().getWeather_now();
+                String visibility = currentWeather.getWeatherNow().getVisibility();
                 String humidity = currentWeather.getWeatherNow().getHumidity();
-                if (cityName != null && temperature != null) {
-                    Logger.d("now");
-                    Logger.d(cityName + ":" + weather + ", " + temperature + ", " + humidity);
-                    tvCurrentWeather.setText(cityName + ":" + weather + ", " + temperature + ", " + humidity);
+                String weatherType = currentWeather.getWeatherNow().getWeather_now();
+                String windDirection = currentWeather.getWeatherNow().getWind_direction();
+
+                if (cityName != null && temperature != null && weatherType != null) {
+                    tvCityName.setText(cityName);
+                    tvCurrentTemp.setText(temperature);
+                    tvWeatherType.setText(weatherType);
+                    tvHumidity.setText(humidity + "%");
+                    tvVisibility.setText(visibility + "km");
+                    tvWindDirection.setText(windDirection + "风");
+                    ivCurrentWeather.setImageResource(ClassUtil.getResId("ic_" +
+                            currentWeather.getWeatherNow().getCode(), R.drawable.class));
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -188,16 +190,57 @@ public class HomeActivity extends BaseActivity
                 PredictWeather predictWeather = gson.fromJson(jsonObjStr, PredictWeather.class);
 
                 List<WeatherDaily> weatherDailies = predictWeather.getWeatherDailyList();
-                if(weatherDailies != null){
-                    int days = weatherDailies.size();
-                    if(days > 2){
-                        Logger.d("predict");
-                        Logger.d(weatherDailies.get(1).getText_day() + " : " + weatherDailies.get(1).getDate());
-                        tvPredictWeather.setText(weatherDailies.get(1).getText_day() + " : " + weatherDailies.get(1).getDate());
-                    }
-                }
+                initPredictInfo(weatherDailies);
+
             } catch (JSONException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private void initPredictInfo(List<WeatherDaily> weatherDailies) {
+        if (weatherDailies != null){
+            if (weatherDailies.size() == 4){
+                WeatherDaily one = weatherDailies.get(0);
+                String code = one.getCode_day();
+                ivPredictImage1.setImageResource(ClassUtil.getResId("ic_" + code, R.drawable.class));
+
+                tvPredict1.setText(one.getDate());
+                tvPredictWeatherType1.setText(one.getText_day());
+                tvPredictWind1.setText(one.getWind_direction() + "风");
+                String weather = String.format(getResources().getString(R.string.lower_higher_format),
+                        one.getLow(), one.getHigh());
+                tvLowerHigherTemp1.setText(weather);
+
+                WeatherDaily two = weatherDailies.get(1);
+                code = two.getCode_day();
+                ivPredictImage2.setImageResource(ClassUtil.getResId("ic_" + code, R.drawable.class));
+                tvPredict2.setText(two.getDate());
+                tvPredictWeatherType2.setText(two.getText_day());
+                tvPredictWind2.setText(two.getWind_direction() + "风");
+                weather = String.format(getResources().getString(R.string.lower_higher_format),
+                        two.getLow(), two.getHigh());
+                tvLowerHigherTemp2.setText(weather);
+
+                WeatherDaily three = weatherDailies.get(2);
+                code = three.getCode_day();
+                ivPredictImage3.setImageResource(ClassUtil.getResId("ic_" + code, R.drawable.class));
+                tvPredict3.setText(three.getDate());
+                tvPredictWeatherType3.setText(three.getText_day());
+                tvPredictWind3.setText(three.getWind_direction() + "风");
+                weather = String.format(getResources().getString(R.string.lower_higher_format),
+                        three.getLow(), three.getHigh());
+                tvLowerHigherTemp3.setText(weather);
+
+                WeatherDaily four = weatherDailies.get(3);
+                code = four.getCode_day();
+                ivPredictImage4.setImageResource(ClassUtil.getResId("ic_" + code, R.drawable.class));
+                tvPredict4.setText(four.getDate());
+                tvPredictWeatherType4.setText(four.getText_day());
+                tvPredictWind4.setText(four.getWind_direction() + "风");
+                weather = String.format(getResources().getString(R.string.lower_higher_format),
+                        four.getLow(), four.getHigh());
+                tvLowerHigherTemp4.setText(weather);
             }
         }
     }
@@ -244,6 +287,7 @@ public class HomeActivity extends BaseActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            initWeatherInfo();
             return true;
         }
 

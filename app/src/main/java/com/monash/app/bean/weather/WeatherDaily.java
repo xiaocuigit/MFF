@@ -9,7 +9,7 @@ import java.util.Date;
  */
 
 public class WeatherDaily {
-    public Date date;
+    public String date;
     public String text_day;
     public String code_day;
     public String text_night;
@@ -22,11 +22,11 @@ public class WeatherDaily {
     public String wind_speed;
     public String wind_scale;
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 

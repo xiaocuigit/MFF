@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="FIND NEW FRIENDS"
-        android:textColor="@color/dodgerblue"
+        android:textColor="@color/colorPrimary"
         android:textSize="25sp"
         android:textStyle="bold"/>
 
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="who has the same attributes as yourself"
-        android:textColor="@color/dodgerblue"
+        android:textColor="@color/sienna"
         android:textSize="15sp"
         android:layout_marginTop="10dp"/>
 
@@ -37,7 +37,7 @@
             android:layout_marginRight="20dp"
             android:textStyle="bold"
             android:text="ATTRIBUTES"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/red_light"
             android:textSize="28sp"
             android:layout_marginTop="20dp"
             android:background="@drawable/text_view_border"/>
