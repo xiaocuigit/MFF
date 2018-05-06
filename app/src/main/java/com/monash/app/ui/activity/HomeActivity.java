@@ -351,19 +351,4 @@ public class HomeActivity extends BaseActivity
             Logger.d("user is null");
         }
     }
-
-    private String getImageURL(String jsonString) {
-        try {
-            JSONArray jsonArray = new JSONObject(jsonString).getJSONArray("images");
-            for(int i = 0; i < jsonArray.length(); i++){
-                JSONObject object = jsonArray.getJSONObject(i);
-                if(object.has("url")){
-                    return object.getString("url");
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 }

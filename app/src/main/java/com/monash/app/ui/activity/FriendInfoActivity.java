@@ -48,7 +48,6 @@ public class FriendInfoActivity extends BaseActivity {
 
     private String movieName;
     private MovieInfo movieInfo;
-    private boolean flag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,11 +120,6 @@ public class FriendInfoActivity extends BaseActivity {
     void getMovieInfo(){
         if (movieName != null) {
             HttpUtil.getInstance().get(ConfigUtil.GET_MOVIE_URL + movieName, ConfigUtil.EVENT_GET_MOVIE_INFO);
-            if (flag){
-                Intent intent = new Intent(this, MovieInfoActivity.class);
-                intent.putExtra("movie", movieInfo);
-                startActivity(intent);
-            }
         }
     }
 
@@ -202,7 +196,9 @@ public class FriendInfoActivity extends BaseActivity {
                 String summary = summaryJson.getString("summary");
                 movieInfo.setSummary(summary);
                 // 表示电影的所有信息都已经获得完毕
-                flag = true;
+                Intent intent = new Intent(this, MovieInfoActivity.class);
+                intent.putExtra("movie", movieInfo);
+                startActivity(intent);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

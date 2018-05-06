@@ -90,15 +90,10 @@ public class FavorUnitsFragment extends BaseFragment {
             PieData data = new PieData(dataSet);
             pieChart.setData(data);
             pieChart.setCenterText("Favor Units");
-//            pieChart.setUsePercentValues(true);
             pieChart.setClickable(true);
             pieChart.setDrawEntryLabels(true);
             pieChart.animateY(1000);
             pieChart.invalidate();
         }
-    }
-
-    private void initUnitsChatView() {
-
     }
 }

@@ -18,7 +18,6 @@ import okhttp3.Response;
 public class HttpUtil {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    public static final MediaType XML = MediaType.parse("application/xml; charset=utf-8");
     private static HttpUtil instance;
     private OkHttpClient client;
 

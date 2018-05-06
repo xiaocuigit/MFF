@@ -35,7 +35,7 @@ public class ConfigUtil {
 
     public static int EVENT_LOAD_CURRENT_WEATHER = 3;
     public static int EVENT_LOAD_PREDICT_WEATHER = 4;
-    public static int EVENT_LOAD_IMAGE = 5;
+    public static int EVENT_GET_MOVIE_SUMMARY = 5;
     public static int EVENT_GET_UNITS_REPORT = 6;
     public static int EVENT_GET_LOCATION_REPORT = 7;
     public static int EVENT_ADD_FRIEND = 8;
@@ -43,5 +43,4 @@ public class ConfigUtil {
     public static int EVENT_SEARCH_FRIENDS = 10;
     public static int EVENT_GET_USER_FRIENDS = 11;
     public static int EVENT_GET_MOVIE_INFO = 12;
-    public static int EVENT_GET_MOVIE_SUMMARY = 13;
 }
