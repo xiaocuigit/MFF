@@ -169,7 +169,7 @@ public class HomeActivity extends BaseActivity
                     tvWeatherType.setText(weatherType);
                     tvHumidity.setText(humidity + "%");
                     tvVisibility.setText(visibility + "km");
-                    tvWindDirection.setText(windDirection + "风");
+                    tvWindDirection.setText(windDirection);
                     ivCurrentWeather.setImageResource(ClassUtil.getResId("ic_" +
                             currentWeather.getWeatherNow().getCode(), R.drawable.class));
                 }
@@ -207,7 +207,7 @@ public class HomeActivity extends BaseActivity
 
                 tvPredict1.setText(one.getDate());
                 tvPredictWeatherType1.setText(one.getText_day());
-                tvPredictWind1.setText(one.getWind_direction() + "风");
+                tvPredictWind1.setText(one.getWind_direction());
                 String weather = String.format(getResources().getString(R.string.lower_higher_format),
                         one.getLow(), one.getHigh());
                 tvLowerHigherTemp1.setText(weather);
@@ -217,7 +217,7 @@ public class HomeActivity extends BaseActivity
                 ivPredictImage2.setImageResource(ClassUtil.getResId("ic_" + code, R.drawable.class));
                 tvPredict2.setText(two.getDate());
                 tvPredictWeatherType2.setText(two.getText_day());
-                tvPredictWind2.setText(two.getWind_direction() + "风");
+                tvPredictWind2.setText(two.getWind_direction());
                 weather = String.format(getResources().getString(R.string.lower_higher_format),
                         two.getLow(), two.getHigh());
                 tvLowerHigherTemp2.setText(weather);
@@ -227,7 +227,7 @@ public class HomeActivity extends BaseActivity
                 ivPredictImage3.setImageResource(ClassUtil.getResId("ic_" + code, R.drawable.class));
                 tvPredict3.setText(three.getDate());
                 tvPredictWeatherType3.setText(three.getText_day());
-                tvPredictWind3.setText(three.getWind_direction() + "风");
+                tvPredictWind3.setText(three.getWind_direction());
                 weather = String.format(getResources().getString(R.string.lower_higher_format),
                         three.getLow(), three.getHigh());
                 tvLowerHigherTemp3.setText(weather);
@@ -237,7 +237,7 @@ public class HomeActivity extends BaseActivity
                 ivPredictImage4.setImageResource(ClassUtil.getResId("ic_" + code, R.drawable.class));
                 tvPredict4.setText(four.getDate());
                 tvPredictWeatherType4.setText(four.getText_day());
-                tvPredictWind4.setText(four.getWind_direction() + "风");
+                tvPredictWind4.setText(four.getWind_direction());
                 weather = String.format(getResources().getString(R.string.lower_higher_format),
                         four.getLow(), four.getHigh());
                 tvLowerHigherTemp4.setText(weather);

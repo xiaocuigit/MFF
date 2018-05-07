@@ -14,7 +14,8 @@ import org.json.JSONObject;
  */
 
 public class WeatherUtil {
-    private static String LANGUAGE = "zh-Hans";
+//    private static String LANGUAGE = "zh-Hans";
+    private static String LANGUAGE = "en";
     private static String UNIT = "c";
     private static String KEY = "nf2fsvb0v3abpuww";
 

@@ -86,9 +86,14 @@ public class FavorUnitsFragment extends BaseFragment {
                 entries.add(new PieEntry((float)y, unit.getFavUnit()));
             }
             PieDataSet dataSet = new PieDataSet(entries, "favor units report");
+            dataSet.setSliceSpace(3f);
+            dataSet.setDrawValues(false);
             dataSet.setColors(ColorTemplate.PASTEL_COLORS);
             PieData data = new PieData(dataSet);
+            data.setDrawValues(true);
+
             pieChart.setData(data);
+//            pieChart.setUsePercentValues(true);
             pieChart.setCenterText("Favor Units");
             pieChart.setClickable(true);
             pieChart.setDrawEntryLabels(true);

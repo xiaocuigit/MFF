@@ -18,12 +18,9 @@ import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.monash.app.App;
 import com.monash.app.R;
 import com.monash.app.bean.LocationVisited;
 import com.monash.app.utils.ConfigUtil;
@@ -142,11 +139,12 @@ public class LocationFragment extends BaseFragment{
             {}.getType());
 
             ArrayList<BarEntry> entries = new ArrayList<>();    //显示条目
-            XAxis xAxis = bcLocationReport.getXAxis();
+            ArrayList<String> labels = new ArrayList<>();
 
             float position = 0;
             for (LocationVisited location : locationVisiteds){
                 Logger.d(location.getPlace() + " : " + location.getFrequency());
+                labels.add(location.getPlace());
                 Integer frequency = Integer.decode(location.getFrequency());
                 entries.add(new BarEntry(position, (float)frequency));
                 position += 1;
@@ -159,14 +157,16 @@ public class LocationFragment extends BaseFragment{
 
             bcLocationReport.getLegend().setForm(Legend.LegendForm.CIRCLE);
 
-            bcLocationReport.getXAxis().setDrawGridLines(false);
+            bcLocationReport.getXAxis().setDrawGridLines(true);
             bcLocationReport.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
             bcLocationReport.getXAxis().setAxisLineWidth(1.0f);
+            bcLocationReport.getXAxis().setEnabled(false);
 
             bcLocationReport.getAxisRight().setEnabled(false);
+
             bcLocationReport.getAxisLeft().setAxisMinimum(0.0f);
             bcLocationReport.getAxisLeft().setDrawGridLines(false);
-            bcLocationReport.getAxisLeft().setAxisMaximum(6.0f);
+            bcLocationReport.getAxisLeft().setAxisMaximum(4.0f);
 
             bcLocationReport.setFitBars(true);
             bcLocationReport.animateY(1000);
